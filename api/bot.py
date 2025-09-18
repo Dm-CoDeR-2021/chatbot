@@ -137,8 +137,8 @@ def webhook():
                     base.save(output_bytes, format="PNG")
                     output_bytes.seek(0)
 
-                    filess = {"photo": ("output.png", output_bytes)}
-                    requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=filess)
+                    filess = {"document": ("output.png", output_bytes)}
+                    requests.post(f"{TELEGRAM_API}/sendDocument", data={"chat_id": msg.chat_id}, files=filess)
 
                     database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"}, eq="id", eq_value=msg.mfrom["id"])
 
