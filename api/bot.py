@@ -142,7 +142,7 @@ def webhook():
 
                     #6️⃣ ارسال دوباره به تلگرام
                     files = {"photo": ("output.png", output_bytes)}
-                    requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=files)
+                    requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id, "files": files})
 
                     database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"}, eq="id", eq_value=msg.mfrom["id"])
 
