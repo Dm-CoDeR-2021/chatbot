@@ -133,7 +133,7 @@ def webhook():
                     
                     base = Image.open(file_bytes)  # تصویر کاربر
                     send_message(msg.chat_id, "3")
-                    overlay = Image.open("layer_prec.png")  # تصویر خودت
+                    overlay = Image.open("api/layer_prec.png")  # تصویر خودت
                     send_message(msg.chat_id, "4")
                     # 4️⃣ اعمال overlay
                     base.paste(overlay, (0, 0), overlay)
