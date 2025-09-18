@@ -73,8 +73,6 @@ def webhook():
         caption = message.get("caption","")
         is_admin = True if message["from"]["id"] == 5859474607 or message["from"]["id"] == 7839178126 else False
 
-    send_message(msg.chat_id, str(update))
-
     if msg.type == "private":
         try:
             if msg.text == "/start":
@@ -111,7 +109,10 @@ def webhook():
                 if data == "metelogix":
                     database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "meteologix"})
                     send_reply(msg.chat_id, msg.id, "عکس مدل مورد نظر را ارسال کنید. (توجه کنید عکس را از طریق سایت دانلود کنید و زوم استان مازندران باشد.)")
-                    
+                    requests.post(f"https://api.telegram.org/bot{TOKEN}/answerCallbackQuery", json={
+                        "callback_query_id": cq["id"],
+                        "text": "دکمه زده شد!"
+                    })
 
             if "photo" in update:
                 if database.Select(eq="id", eq_value=msg.mfrom["id"]).data["user_state"] == "meteologix":
