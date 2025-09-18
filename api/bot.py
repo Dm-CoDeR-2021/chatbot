@@ -75,6 +75,8 @@ def webhook():
         caption = message.get("caption","")
         is_admin = True if message["from"]["id"] == 5859474607 or message["from"]["id"] == 7839178126 else False
 
+    send_message(msg.chat_id, str(update))
+
     if msg.type == "private":
         try:
             if msg.text == "/start":
@@ -98,7 +100,7 @@ def webhook():
                     "reply_markup": keyboard
                 }
 
-                database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "none"})
+                database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "none"})
                 send_message_advanced(data)
             
             elif "callback_query" in update:
@@ -109,7 +111,7 @@ def webhook():
                 msg_id = cq["message"]["message_id"]
 
                 if data == "metelogix":
-                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "meteologix"})
+                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "meteologix"})
                     send_reply(msg.chat_id, msg.id, "عکس مدل مورد نظر را ارسال کنید. (توجه کنید عکس را از طریق سایت دانلود کنید و زوم استان مازندران باشد.)")
                     
 
@@ -139,7 +141,7 @@ def webhook():
                     files = {"photo": ("output.png", output_bytes)}
                     requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=files)
 
-                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "none"})
+                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "none"})
 
 
 
