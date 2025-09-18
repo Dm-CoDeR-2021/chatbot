@@ -57,8 +57,6 @@ def webhook():
     # if not message:
     #     return jsonify(ok=True)
 
-    if message["from"]["is_bot"] == True:
-        return
 
     class msg: 
         chat_id = message["chat"]["id"]
@@ -90,7 +88,7 @@ def webhook():
 
                 keyboard = {
                     "inline_keyboard": [
-                        [{"text": "Meteologix / Weather.us / Kachelmanweather", "callback_data": "meteologix"}],
+                        [{"text": "Meteologix", "callback_data": "meteologix"}],
                     ]
                 }   
 
