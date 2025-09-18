@@ -4,8 +4,11 @@ import requests
 import random
 import json
 import sys
+from io import BytesIO
 sys.path.append("api/")
+
 import db as database
+from PIL import Image
 
 db = []
 last_random = 0
@@ -72,87 +75,74 @@ def webhook():
         caption = message.get("caption","")
         is_admin = True if message["from"]["id"] == 5859474607 or message["from"]["id"] == 7839178126 else False
 
-    if msg.reply:
-        send_message(msg.chat_id, str(update))
-
     if msg.type == "private":
         try:
-            if msg.text == "/start" and msg.is_admin:
-                keyboard1 = {
-                    "keyboard": [
-                        [{"text": "Show unread messages 💌"}, {"text": "Show all messages 📮"}],
-                    ],
-                    "resize_keyboard": True
-                }
+            if msg.text == "/start":
+                text = """
+- 💡 ربات در حال توسعه میباشد بنابرین امکانات ربات محدود است. به زودی آپشن های بیشتر به ربات اضافه میشود.
+
+سلام. به ربات تفکیک نقشه های هواشناسی خوش اومدی.
+
+لطفا سایت مورد نظر را جهت انجام تفکیک انتخاب کنید.
+"""
+
+                keyboard = {
+                    "inline_keyboard": [
+                        [{"text": "Meteologix / Weather.us / Kachelmanweather", "callback_data": "meteologix"}],
+                    ]
+                }   
 
                 data = {
                     "chat_id": msg.chat_id,
-                    "text": "Select an option:",
-                    "reply_markup": json.dumps(keyboard1)
+                    "text": text,
+                    "reply_markup": keyboard
                 }
 
+                database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "none"})
                 send_message_advanced(data)
-            elif msg.text == "Show unread messages 💌" and msg.is_admin:
-                res = database.Select("messages", eq="read", eq_value=False).data
-                data = [{"id": "NULL", "name": "NULL", "username": "NULL"}]
-                ids = []
-                _data = "💌 Unread messages:\n\n"
             
-                for i in res:
-                    data.append({"id": i["id"], "name": i["name"], "username": f"@{i["username"]}"})
-                    ids.append(i["id"])
+            elif "callback_query" in update:
+                cq = update["callback_query"]
+                cq_id = cq["id"]
+                data = cq["data"]
+                chat_id = cq["message"]["chat"]["id"]
+                msg_id = cq["message"]["message_id"]
 
-                for i in data:
-                    for _i in ids:
-                        if i["id"] == _i:
-                            _data += f'({ids.count(_i)}) [ {i["name"]} ] {i["username"]} :\n<a href="https://t.me/chat_samibot?start=get_{i["id"]}">Show all </a>\n\n'
-
-                            while _i in ids:
-                                ids.remove(_i)
-
-                send_message_advanced({"chat_id": msg.chat_id, "text": _data, "parse_mode": "HTML"})
+                if data == "metelogix":
+                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "meteologix"})
+                    send_reply(msg.chat_id, msg.id, "عکس مدل مورد نظر را ارسال کنید. (توجه کنید عکس را از طریق سایت دانلود کنید و زوم استان مازندران باشد.)")
                     
-                
-            if len(database.Exist(eq_value=msg.mfrom["id"])) == 0:
-                        
-                res = database.Upsert(data={
-                    "id": msg.mfrom["id"],
-                    "first_name": str(msg.mfrom["first_name"]),
-                    "last_name": str(msg.mfrom.get("last_name", "NULL")),
-                    "username": str(msg.mfrom["username"])
-                })
 
-            data = {
-                "chat_id": 7839178126,
-                "from_chat_id": msg.chat_id,
-                "message_id": msg.id
-            }
+            if "photo" in update:
+                if database.Select(eq="id", eq_value=msg.mfrom["id"]).data["user_state"] == "meteologix":
 
-            res = send_forward(data) 
-            send_reply(msg.chat_id, msg.id, "Your message sent to @samijunior.")
+                    res = requests.get(f"{TELEGRAM_API}/getFile", params={"file_id": update["message"]["photo"][-1]["file_id"]}).json()
+                    file_path = res["result"]["file_path"]
 
-            if len(update["message"].get("photo", [])) != 0:
-                database.Insert("messages", data=
-                {
-                    "id": msg.mfrom["id"],
-                    "username": msg.username,
-                    "name": msg.first_name,
-                    "text": update["message"].get("caption", msg.text),
-                    "message_id": res["result"]["message_id"],
-                    "file": str(update["message"]["photo"][len(update["message"]["photo"])-1]["file_id"]),
-                    "read": False
-                })
-            else:
-                database.Insert("messages", data=
-                {
-                    "id": msg.mfrom["id"],
-                    "username": msg.username,
-                    "name": msg.first_name,
-                    "text": msg.text,
-                    "message_id": res["result"]["message_id"],
-                    "read": False
-                })
-                
+                    # 2️⃣ دانلود فایل به حافظه
+                    file_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
+                    file_bytes = BytesIO(requests.get(file_url).content)
+
+                    # 3️⃣ باز کردن با PIL
+                    base = Image.open(file_bytes)  # تصویر کاربر
+                    overlay = Image.open("layer_prec.png")  # تصویر خودت
+
+                    # 4️⃣ اعمال overlay
+                    base.paste(overlay, (0, 0), overlay)
+
+                    # 5️⃣ آماده سازی خروجی در حافظه
+                    output_bytes = BytesIO()
+                    base.save(output_bytes, format="PNG")
+                    output_bytes.seek(0)
+
+                    # 6️⃣ ارسال دوباره به تلگرام
+                    files = {"photo": ("output.png", output_bytes)}
+                    requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=files)
+
+                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "none"})
+
+
+
         except Exception as e: 
             send_message(msg.chat_id, e)
     return jsonify(ok=True)
