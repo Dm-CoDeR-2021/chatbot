@@ -127,23 +127,23 @@ def webhook():
                     file_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
                     file_bytes = BytesIO(requests.get(file_url).content)
 
-                    # 3️⃣ باز کردن با PIL
-                    base = Image.open(file_bytes)  # تصویر کاربر
-                    overlay = Image.open("layer_prec.png")  # تصویر خودت
+                    # # 3️⃣ باز کردن با PIL
+                    # base = Image.open(file_bytes)  # تصویر کاربر
+                    # overlay = Image.open("layer_prec.png")  # تصویر خودت
 
-                    # 4️⃣ اعمال overlay
-                    base.paste(overlay, (0, 0), overlay)
+                    # # 4️⃣ اعمال overlay
+                    # base.paste(overlay, (0, 0), overlay)
 
-                    # 5️⃣ آماده سازی خروجی در حافظه
-                    output_bytes = BytesIO()
-                    base.save(output_bytes, format="PNG")
-                    output_bytes.seek(0)
+                    # # 5️⃣ آماده سازی خروجی در حافظه
+                    # output_bytes = BytesIO()
+                    # base.save(output_bytes, format="PNG")
+                    # output_bytes.seek(0)
 
                     # 6️⃣ ارسال دوباره به تلگرام
-                    files = {"photo": ("output.png", output_bytes)}
+                    files = {"photo": ("output.png", file_bytes)}
                     requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=files)
 
-                    database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"})
+                    database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"}, eq="id", eq_value=msg.mfrom["id"])
 
 
 
