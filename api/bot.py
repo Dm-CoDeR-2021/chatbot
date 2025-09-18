@@ -118,8 +118,9 @@ def webhook():
             #         })
 
             if update["message"].get("photo", "none") != "none":
-                send_message(msg.chat_id, "1")
-                if database.Select(eq="id", eq_value=msg.mfrom["id"]).data["user_state"] == "meteologix":
+                res = database.Select(eq="id", eq_value=msg.mfrom["id"]).data
+                send_message(msg.chat_id, str(res))
+                if database.Select(eq="id", eq_value=msg.mfrom["id"]).data == "meteologix":
                     send_message(msg.chat_id, "2")
                     res = requests.get(f"{TELEGRAM_API}/getFile", params={"file_id": update["message"]["photo"][len(update["message"]["photo"])-1]["file_id"]}).json()
                     #file_path = res["result"]["file_path"]
