@@ -81,7 +81,7 @@ def webhook():
 
 سلام. به ربات تفکیک نقشه های هواشناسی خوش اومدی.
 
-لطفا سایت مورد نظر را جهت انجام تفکیک انتخاب کنید.
+لطفا عکس مدل موردنظر را ارسال کنید. (توجه کنید تصویر زوم استان مازندران باشد.)
 """
 
                 keyboard = {
@@ -93,26 +93,26 @@ def webhook():
                 data = {
                     "chat_id": msg.chat_id,
                     "text": text,
-                    "reply_markup": keyboard
+                    #"reply_markup": keyboard
                 }
 
-                database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "none"})
+                database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "metelogix"})
                 send_message_advanced(data)
             
-            elif "callback_query" in update:
-                cq = update["callback_query"]
-                cq_id = cq["id"]
-                data = cq["data"]
-                chat_id = cq["message"]["chat"]["id"]
-                msg_id = cq["message"]["message_id"]
+            # elif "callback_query" in update:
+            #     cq = update["callback_query"]
+            #     cq_id = cq["id"]
+            #     data = cq["data"]
+            #     chat_id = cq["message"]["chat"]["id"]
+            #     msg_id = cq["message"]["message_id"]
 
-                if data == "metelogix":
-                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "meteologix"})
-                    send_reply(msg.chat_id, msg.id, "عکس مدل مورد نظر را ارسال کنید. (توجه کنید عکس را از طریق سایت دانلود کنید و زوم استان مازندران باشد.)")
-                    requests.post(f"https://api.telegram.org/bot{TOKEN}/answerCallbackQuery", json={
-                        "callback_query_id": cq["id"],
-                        "text": "دکمه زده شد!"
-                    })
+            #     if data == "metelogix":
+            #         database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "meteologix"})
+            #         send_reply(msg.chat_id, msg.id, "عکس مدل مورد نظر را ارسال کنید. (توجه کنید عکس را از طریق سایت دانلود کنید و زوم استان مازندران باشد.)")
+            #         requests.post(f"https://api.telegram.org/bot{TOKEN}/answerCallbackQuery", json={
+            #             "callback_query_id": cq["id"],
+            #             "text": "دکمه زده شد!"
+            #         })
 
             if "photo" in update:
                 if database.Select(eq="id", eq_value=msg.mfrom["id"]).data["user_state"] == "meteologix":
