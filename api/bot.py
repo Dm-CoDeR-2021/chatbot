@@ -120,7 +120,7 @@ def webhook():
             if update["message"].get("photo", "none") != "none":
                 res = database.Select(eq="id", eq_value=msg.mfrom["id"]).data
                 if str(res[0]["user_state"]) == "meteologix":
-                    send_message(msg.chat_id, "2")
+
                     res = requests.get(f"{TELEGRAM_API}/getFile", params={"file_id": update["message"]["photo"][len(update["message"]["photo"])-1]["file_id"]}).json()
                     file_path = res["result"]["file_path"]
 
@@ -141,7 +141,7 @@ def webhook():
                     output_bytes.seek(0)
 
                     #6️⃣ ارسال دوباره به تلگرام
-                    files = {"photo": ("output.png", file_bytes)}
+                    files = {"photo": ("output.png", output_bytes)}
                     requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=files)
 
                     database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"}, eq="id", eq_value=msg.mfrom["id"])
