@@ -96,7 +96,10 @@ def webhook():
                     #"reply_markup": keyboard
                 }
 
-                database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "metelogix"})
+                if len(database.Exist(eq = "id", eq_value=msg.mfrom["id"])) == 0:
+                    database.Insert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "last_name": msg.last_name, "username": msg.username ,"user_state": "metelogix"})
+                else:
+                    database.Update(eq="id", eq_value=msg.mfrom["id"], data={"user_state": "meteologix"})
                 send_message_advanced(data)
             
             # elif "callback_query" in update:
@@ -140,7 +143,7 @@ def webhook():
                     files = {"photo": ("output.png", output_bytes)}
                     requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=files)
 
-                    database.Upsert("users", {"id": msg.mfrom["id"], "first_name": msg.first_name, "username": msg.username ,"user_state": "none"})
+                    database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"})
 
 
 
