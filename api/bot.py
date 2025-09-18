@@ -120,10 +120,10 @@ def webhook():
             if "photo" in update:
                 if database.Select(eq="id", eq_value=msg.mfrom["id"]).data["user_state"] == "meteologix":
 
-                    res = requests.get(f"{TELEGRAM_API}/getFile", params={"file_id": update["message"]["photo"][-1]["file_id"]}).json()
-                    file_path = res["result"]["file_path"]
+                    res = requests.get(f"{TELEGRAM_API}/getFile", params={"file_id": update["message"]["photo"][len(update["message"]["photo"])-1]["file_id"]}).json()
+                    #file_path = res["result"]["file_path"]
 
-                    send_message(msg.chat_id, str(file_path))
+                    send_message(msg.chat_id, str(res))
 
                     # # 2️⃣ دانلود فایل به حافظه
                     # file_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
