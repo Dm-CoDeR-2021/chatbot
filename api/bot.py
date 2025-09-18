@@ -124,33 +124,21 @@ def webhook():
                     res = requests.get(f"{TELEGRAM_API}/getFile", params={"file_id": update["message"]["photo"][len(update["message"]["photo"])-1]["file_id"]}).json()
                     file_path = res["result"]["file_path"]
 
-                    # 2️⃣ دانلود فایل به حافظه
+
                     file_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
-                    send_message(msg.chat_id, "1")
                     file_bytes = BytesIO(requests.get(file_url).content)
-                    send_message(msg.chat_id, "2")
-                    # 3️⃣ باز کردن با PIL
                     
                     base = Image.open(file_bytes)  # تصویر کاربر
-                    send_message(msg.chat_id, "3")
                     overlay = Image.open("api/layer_prec.png")  # تصویر خودت
-                    send_message(msg.chat_id, "4")
-                    # 4️⃣ اعمال overlay
-                    base.paste(overlay, (0, 0), overlay)
-                    send_message(msg.chat_id, "5")
-                    # 5️⃣ آماده سازی خروجی در حافظه
-                    output_bytes = BytesIO()
-                    send_message(msg.chat_id, "6")                   
-                    base.save(output_bytes, format="PNG")
-                    send_message(msg.chat_id, "7")
-                    output_bytes.seek(0)
-                    send_message(msg.chat_id, "8")
 
-                    #6️⃣ ارسال دوباره به تلگرام
+                    base.paste(overlay, (0, 0), overlay)
+
+                    output_bytes = BytesIO()
+                    base.save(output_bytes, format="PNG")
+                    output_bytes.seek(0)
+
                     filess = {"photo": ("output.png", output_bytes)}
-                    send_message(msg.chat_id, "9")
                     requests.post(f"{TELEGRAM_API}/sendPhoto", data={"chat_id": msg.chat_id}, files=filess)
-                    send_message(msg.chat_id, "10")
 
                     database.Update("users", {"id": msg.mfrom["id"], "user_state": "none"}, eq="id", eq_value=msg.mfrom["id"])
 
